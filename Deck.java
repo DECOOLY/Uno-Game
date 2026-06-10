@@ -3,6 +3,9 @@ import java.util.ArrayList;
 /**
  * Manages the draw deck and discard pile for the Uno game.
  * Handles shuffling, drawing, and discarding cards, and reshuffles when needed.
+ * * Instance Variables:
+ * - cards: The main draw pile of cards available for players to draw
+ * - discardPile: The pile where players discard their played cards
  */
 public class Deck {
     /** The main draw pile of cards available for players to draw. */
@@ -55,9 +58,9 @@ public class Deck {
     }
     
     /**
-     * Builds the complete Uno deck with all standard cards:
-     * numbered cards (0-9) in four colors, action cards (Skip, Reverse, +2),
-     * and wild cards (+4 and Color Change).
+     * creates the Uno deck with all standard cards:
+     * numbered cards 0-9 in four colors, action cards Skip, Reverse, +2,
+     * and wild cards +4 and Color Change.
      */
     private void initializeDeck() {
         String[] colors = {"R", "G", "B", "Y"};
@@ -83,7 +86,7 @@ public class Deck {
     }
 
     /**
-     * Randomly shuffles the draw pile using the Fisher-Yates algorithm.
+     * Randomly shuffles the draw pile
      */
     private void shuffleDeck() {
         int n = cards.size();
@@ -97,9 +100,9 @@ public class Deck {
     
     /**
      * Draws the top card from the draw pile.
-     * If the draw pile is empty, reshuffles the discard pile back into it.
+     * If the draw pile is empty reshuffles the discard pile back into it.
      * 
-     * @return the card drawn, or null if completely out of cards
+     * @return the card drawn or null if completely out of cards
      */
     public Card drawCard() {
         if (cards.isEmpty()) {
@@ -117,8 +120,8 @@ public class Deck {
     }
 
     /**
-     * Replaces the entire draw pile with a new list of cards.
-     * Useful for testing or resetting the game.
+     * replaces the entire draw pile with a new list of cards.
+     * Useful for testing or resetting the game
      * 
      * @param cards the new list of cards for the draw pile
      */
@@ -127,7 +130,7 @@ public class Deck {
     }
 
     /**
-     * Returns the current draw pile.
+     * returns the current draw pile.
      * 
      * @return the list of cards remaining in the draw pile
      */
@@ -144,4 +147,5 @@ public class Deck {
     public String toString() {
         return "Draw Pile: " + cards.size() + " cards | Discard Pile: " + discardPile.size() + " cards";
     }
+
 }
