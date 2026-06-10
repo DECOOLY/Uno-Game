@@ -3,7 +3,13 @@ import java.util.Scanner;
 
 /**
  * Main game engine for Uno.
- * Manages players, turns, game state, and win conditions.
+ * Manages players, turns, game, and winning.
+ * * * Instance Variables:
+ * - deck: The deck of cards used for drawing and discarding throughout the game.
+ * - players: List of all participating players in the game.
+ * - currentTurn: The index of the player whose turn it currently is.
+ * - reverseDirection: The direction of play (false for clockwise, true for counter-clockwise).
+ * - activeColor: The active color set by wild cards ("R", "B", "G", "Y").
  */
 public class Uno {
     /** The deck of cards for the game. */
@@ -40,8 +46,9 @@ public class Uno {
     /**
      * Deals 7 cards to each player and starts the game by flipping the first card.
      * Handles special card penalties for first card if needed.
+     * * @param scanner the Scanner object for user input
      */
-    public void setupGame() {
+    public void setupGame(Scanner scanner) {
         for (Player p : players) {
             for (int i = 0; i < 7; i++) {
                 p.receiveCard(deck.drawCard());
@@ -50,40 +57,59 @@ public class Uno {
         deck.initializeDiscardPile();
         
         Card firstCard = deck.getTopDiscardCard();
-        handleFirstCardPenalty(firstCard);
+        handleFirstCardPenalty(firstCard, scanner);
     }
 
     /**
      * Checks if the first card flipped is a special card and applies penalties.
      * * @param firstCard the card flipped to start the game
+     * @param scanner the Scanner object for user input
      */
-    private void handleFirstCardPenalty(Card firstCard) {
-        if (firstCard.getValue().equals("SKP")) {
-            System.out.println("First card is Skip! " + players.get(0).getName() + " loses their turn.");
+    private void handleFirstCardPenalty(Card firstCard, Scanner scanner) {
+        String val = firstCard.getValue();
+        String firstName = players.get(0).getName();
+        if (val.equals("SKP")) {
+            System.out.println("First card is Skip! " + firstName + " loses their turn.");
             moveToNextPlayer();
-        } else if (firstCard.getValue().equals("REV")) {
+        } else if (val.equals("REV")) {
             System.out.println("First card is Reverse! Direction reversed.");
             reverseDirection = !reverseDirection;
-        } else if (firstCard.getValue().equals("+2 ")) {
-            System.out.println("First card is +2! " + players.get(0).getName() + " draws 2 cards.");
-            for (int i = 0; i < 2; i++) {
-                Card drawnCard = deck.drawCard();
-                if (drawnCard != null) {
-                    players.get(0).receiveCard(drawnCard);
-                }
-            }
+        } else if (val.equals("+2 ")) {
+            System.out.println("First card is +2! " + firstName + " draws 2 cards.");
+            drawCardsForPlayer(players.get(0), 2);
             moveToNextPlayer();
+        } else if (val.equals("+4 ")) {
+            System.out.println("First card is +4! " + firstName + " draws 4 cards and loses their turn.");
+            drawCardsForPlayer(players.get(0), 4);
+            moveToNextPlayer();
+        } else if (val.equals("CLR")) {
+            System.out.println("First card is Change Colour!");
+            promptColorChange(scanner, players.get(0));
         }
     }
 
     /**
-     * Checks if the game is over (any player has 0 cards).
+     * Helper method to make a specific player draw a given number of cards.
+     * * @param player the player who must draw cards
+     * @param count the number of cards to be drawn
+     */
+    private void drawCardsForPlayer(Player player, int count) {
+        for (int i = 0; i < count; i++) {
+            Card drawnCard = deck.drawCard();
+            if (drawnCard != null) {
+                player.receiveCard(drawnCard);
+            }
+        }
+    }
+
+    /**
+     * Checks if the game is over which is when any player has 0 cards.
      * * @return true if a player has won, false otherwise
      */
     public boolean isGameOver() {
         for (Player p : players) {
             if (p.getHandSize() == 0) {
-                System.out.println("\n🎉 CONGRATULATIONS! " + p.getName() + " wins the game! 🎉");
+                System.out.println("\n CONGRATULATIONSSSSSS! " + p.getName() + " wins the game! ");
                 return true;
             }
         }
@@ -126,14 +152,11 @@ public class Uno {
         String input = scanner.next();
         
         try {
-            // Check if input is text instead of a number
             if (!input.matches("-?\\d+")) {
                 throw new IllegalArgumentException("Input '" + input + "' is not a whole number index!");
             }
             
             int choice = Integer.parseInt(input);
-            
-            // Check if input number is completely out of index bounds
             if (choice < -1 || choice >= player.getHandSize()) {
                 throw new IllegalArgumentException("Index selection " + choice + " is out of bounds!");
             }
@@ -144,7 +167,7 @@ public class Uno {
             return playCardAtIndex(scanner, player, choice, topCard);
             
         } catch (IllegalArgumentException e) {
-            System.out.println("⚠️ Error: " + e.getMessage() + " Please try again.");
+            System.out.println(" Error: " + e.getMessage() + " Please try again.");
             return false;
         }
     }
@@ -185,7 +208,7 @@ public class Uno {
             executeCardEffect(scanner, chosenCard);
             return true;
         } else {
-            System.out.println(" Invalid move! That card doesn't match the color or value. Try again.");
+            System.out.println(" Invalid move! That card doesn't match the color or value. Try again pls.");
             player.receiveCardAt(index, chosenCard);
             return false;
         }
@@ -201,13 +224,13 @@ public class Uno {
         if (chosenCard.getColor().equals("W")) {
             return true;
         }
-        if (topCard.getColor().equals("W") && activeColor == null) {
+        if (activeColor != null) {
+            return chosenCard.getColor().equals(activeColor);
+        }
+        if (topCard.getColor().equals("W")) {
             return true;
         }
-        if (activeColor != null && chosenCard.getColor().equals(activeColor)) {
-            return true;
-        }
-        return chosenCard.getColor().equals(topCard.getColor()) || 
+        return chosenCard.getColor().equals(topCard.getColor()) ||
                chosenCard.getValue().equals(topCard.getValue());
     }
 
@@ -227,10 +250,11 @@ public class Uno {
         } else if (card.getValue().equals("+2 ")) {
             penalizeNextPlayer(2);
         } else if (card.getValue().equals("+4 ")) {
+            Player cardPlayer = players.get(currentTurn);
             penalizeNextPlayer(4);
-            promptColorChange(scanner);
+            promptColorChange(scanner, cardPlayer);
         } else if (card.getValue().equals("CLR")) {
-            promptColorChange(scanner);
+            promptColorChange(scanner, players.get(currentTurn));
         }
     }
 
@@ -242,44 +266,31 @@ public class Uno {
         moveToNextPlayer();
         Player nextPlayer = players.get(currentTurn);
         System.out.println(nextPlayer.getName() + " draws " + cardCount + " cards and loses their turn!");
-        for (int i = 0; i < cardCount; i++) {
-            Card drawnCard = deck.drawCard();
-            if (drawnCard != null) {
-                nextPlayer.receiveCard(drawnCard);
-            }
-        }
+        drawCardsForPlayer(nextPlayer, cardCount);
     }
 
     /**
      * Prompts the current player to choose a new active color for wild cards.
      * * @param scanner the shared system input scanner stream
+     * @param choosingPlayer the player who is choosing the new color
      */
-    private void promptColorChange(Scanner scanner) {
+    private void promptColorChange(Scanner scanner, Player choosingPlayer) {
         boolean validColor = false;
-        Player currentPlayer = players.get(currentTurn);
         scanner.nextLine(); // Clear scanner buffer
 
         while (!validColor) {
             System.out.print("Enter a colour (red, blue, green, yellow): ");
             String colorInput = scanner.nextLine().trim().toLowerCase();
             
-            if (colorInput.equals("red")) {
-                activeColor = "R";
-                validColor = true;
-            } else if (colorInput.equals("blue")) {
-                activeColor = "B";
-                validColor = true;
-            } else if (colorInput.equals("green")) {
-                activeColor = "G";
-                validColor = true;
-            } else if (colorInput.equals("yellow")) {
-                activeColor = "Y";
+            if (colorInput.equals("red") || colorInput.equals("blue") || 
+                colorInput.equals("green") || colorInput.equals("yellow")) {
+                activeColor = colorInput.substring(0, 1).toUpperCase();
                 validColor = true;
             } else {
                 System.out.println("Invalid color! Please enter red, blue, green, or yellow.");
             }
         }
-        System.out.println(currentPlayer.getName() + " changed the color to: " + activeColor);
+        System.out.println(choosingPlayer.getName() + " changed the color to: " + activeColor);
     }
 
     /**
