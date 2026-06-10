@@ -3,6 +3,9 @@ import java.util.ArrayList;
 /**
  * Represents a player in the Uno game.
  * Manages the player's hand of cards and provides methods to play and receive cards.
+ * * Instance Variables:
+ * - name: The player's name or identifier
+ * - hand: The cards currently in the player's hand
  */
 public class Player {
     /** The player's name or identifier. */
@@ -69,27 +72,21 @@ public class Player {
     @Override
     public String toString() {
         StringBuilder result = new StringBuilder();
-        result.append("\n=== ").append(name).append("'s Hand ===\n");
-
+        result.append("\n ").append(name).append("'s Hand  (card index starts at 0)\n");
         // Each card inner width is 6 visual columns; border = --------
-        StringBuilder lineTop = new StringBuilder();
+        StringBuilder lineEdges = new StringBuilder();
         StringBuilder line2 = new StringBuilder();
         StringBuilder line3 = new StringBuilder();
         StringBuilder line4 = new StringBuilder();
-        StringBuilder lineBot = new StringBuilder();
-
         for (int i = 0; i < hand.size(); i++) {
             Card x = hand.get(i);
             String col = x.getColor();
             String val = x.getValue();
-
-            lineTop.append(" ------     ");
-
-            // Top-left color label, padded to 6 visual cols
+            lineEdges.append(" ------     ");
+            // Top left color label, padded to 6 visual cols
             int colLen = getVisualLength(col);
             int padRight2 = 6 - colLen;
             line2.append("|").append(col).append(" ".repeat(Math.max(0, padRight2))).append("|    ");
-
             // Centered value
             int totalSpace = 6;
             int visualLen = val.length();
@@ -97,19 +94,16 @@ public class Player {
             int padRight3 = totalSpace - visualLen - padLeft3;
             String centeredVal = " ".repeat(Math.max(0, padLeft3)) + val + " ".repeat(Math.max(0, padRight3));
             line3.append("|").append(centeredVal).append("|    ");
-
             // Bottom-right color label, right-aligned
             int padLeft4 = 6 - colLen;
             line4.append("|").append(" ".repeat(Math.max(0, padLeft4))).append(col).append("|    ");
-
-            lineBot.append(" ------     ");
         }
 
-        result.append(lineTop).append("\n");
+        result.append(lineEdges).append("\n");
         result.append(line2).append("\n");
         result.append(line3).append("\n");
         result.append(line4).append("\n");
-        result.append(lineBot).append("\n");
+        result.append(lineEdges).append("\n");
 
         return result.toString();
     }
@@ -123,19 +117,7 @@ public class Player {
      */
     private int getVisualLength(String str) {
         if (str == null) return 0;
-        int length = 0;
-        for (int i = 0; i < str.length(); i++) {
-            int codePoint = str.codePointAt(i);
-            if (codePoint > 0x7F) {
-                length += 2;
-                if (Character.isHighSurrogate(str.charAt(i))) {
-                    i++;
-                }
-            } else {
-                length += 1;
-            }
-        }
-        return length;
+        return str.length();
     }
 
     /**
