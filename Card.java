@@ -1,12 +1,15 @@
 /**
  * Represents a single playing card in the Uno game.
- * Each card has a color (R, G, B, Y, or W for wild) and a value (number or special action).
+ * Each card has a color (R, G, B, Y, or W for wild) and a value (number or action).
+ * * Instance Variables:
+ * - color: The color of the card (R, G, B, Y, or W)
+ * - value: The value of the card (0-9, Skip, Reverse, +2, +4, Color Change)
  */
 public class Card {
     /** The color of the card: R (red), G (green), B (blue), Y (yellow), or W (wild). */
     private String color;
     
-    /** The value of the card: numbers 0-9, action symbols (Skip, Reverse, +2), or wild symbols (+4, Color Change). */
+    /** The value of the card numbers 0-9, action symbols Skip, Reverse, +2, or wild symbols +4, Color Change. */
     private String value;
 
     /**
