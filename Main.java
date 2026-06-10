@@ -42,8 +42,8 @@ public class Main {
             }
         }
 
-        Uno game = new Uno(numPlayers);
-        game.setupGame();
+        Uno game = new Uno(numPlayers); 
+        game.setupGame(scanner);
 
         // Main execution loop
         while (!game.isGameOver()) {
